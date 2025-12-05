@@ -1,0 +1,175 @@
+{
+  "fashion_knowledge": [
+    {
+      "id": "1",
+      "category": "outfit_recommendations",
+      "topic": "Casual Wear Styling",
+      "content": "Casual wear focuses on comfort and relaxed styling. Key pieces include jeans, t-shirts, sneakers, and casual jackets. Popular combinations: denim jeans with plain t-shirts, chinos with polo shirts, and joggers with hoodies. Color coordination tips: neutral colors like white, black, navy, and gray are versatile bases. Add pops of color through accessories or statement pieces.",
+      "tags": ["casual", "styling", "comfort", "everyday wear"],
+      "related_items": ["jeans", "t-shirts", "sneakers", "hoodies", "chinos"]
+    },
+    {
+      "id": "2",
+      "category": "outfit_recommendations",
+      "topic": "Formal Wear Styling",
+      "content": "Formal wear emphasizes professionalism and elegance. Essential items include suits, dress shirts, dress pants, blazers, and formal shoes. For men: navy or charcoal suits with white or light blue shirts. For women: tailored pantsuits, pencil skirts with blouses, or formal dresses. Always ensure proper fit and pressed clothing for formal occasions.",
+      "tags": ["formal", "business", "professional", "elegant"],
+      "related_items": ["suits", "blazers", "dress shirts", "formal shoes", "ties"]
+    },
+    {
+      "id": "3",
+      "category": "outfit_recommendations",
+      "topic": "Party and Evening Wear",
+      "content": "Party wear allows for bold colors, statement pieces, and glamorous accessories. Options include cocktail dresses, dressy jumpsuits, dress shirts with dress pants, and stylish blazers. Add sparkle with metallic accessories, statement jewelry, or embellished shoes. Popular colors: black, red, gold, silver, and jewel tones.",
+      "tags": ["party", "evening", "glamorous", "cocktail"],
+      "related_items": ["cocktail dresses", "jumpsuits", "heels", "statement jewelry", "clutches"]
+    },
+    {
+      "id": "4",
+      "category": "outfit_recommendations",
+      "topic": "Seasonal Styling - Summer",
+      "content": "Summer fashion prioritizes breathability and light fabrics. Recommended materials: cotton, linen, and lightweight synthetics. Outfit ideas: shorts with tank tops, sundresses, light-colored shirts, sandals, and sunglasses. Color palette: pastels, whites, bright colors. Always consider UV protection and comfort in hot weather.",
+      "tags": ["summer", "seasonal", "breathable", "light fabrics"],
+      "related_items": ["shorts", "sundresses", "sandals", "tank tops", "sunglasses"]
+    },
+    {
+      "id": "5",
+      "category": "outfit_recommendations",
+      "topic": "Seasonal Styling - Winter",
+      "content": "Winter fashion focuses on warmth and layering. Essential pieces: coats, jackets, sweaters, scarves, boots, and thermal wear. Layering technique: base layer (thermal), mid layer (sweater/fleece), outer layer (coat/jacket). Popular fabrics: wool, cashmere, fleece, down. Color trends: deep burgundy, forest green, navy, black, and camel.",
+      "tags": ["winter", "seasonal", "layering", "warm"],
+      "related_items": ["coats", "sweaters", "boots", "scarves", "thermal wear"]
+    },
+    {
+      "id": "6",
+      "category": "wardrobe_management",
+      "topic": "Capsule Wardrobe Essentials",
+      "content": "A capsule wardrobe consists of versatile, timeless pieces that can be mixed and matched. Essential items: 2-3 pairs of quality jeans, 5-7 basic t-shirts in neutral colors, 1-2 blazers, 1 leather jacket, 2-3 button-down shirts, 1 little black dress (LBD), quality sneakers, dress shoes, and boots. Focus on quality over quantity.",
+      "tags": ["wardrobe management", "essentials", "versatile", "minimalist"],
+      "related_items": ["basic tees", "jeans", "blazers", "LBD", "quality shoes"]
+    },
+    {
+      "id": "7",
+      "category": "wardrobe_management",
+      "topic": "Sustainable Fashion Practices",
+      "content": "Sustainable wardrobe management includes: buying quality pieces that last longer, choosing eco-friendly fabrics (organic cotton, bamboo, recycled materials), repairing instead of replacing, donating unwanted clothes, shopping secondhand, and supporting ethical brands. Consider cost-per-wear rather than initial price.",
+      "tags": ["sustainability", "eco-friendly", "ethical fashion", "quality"],
+      "related_items": ["organic cotton", "recycled materials", "secondhand", "ethical brands"]
+    },
+    {
+      "id": "8",
+      "category": "color_coordination",
+      "topic": "Color Wheel Basics",
+      "content": "Color coordination fundamentals: Complementary colors (opposite on color wheel) create bold contrasts - blue and orange, red and green. Analogous colors (adjacent on wheel) create harmony - blue, blue-green, green. Neutral colors (black, white, gray, beige) work with everything. Monochromatic looks use different shades of one color.",
+      "tags": ["color theory", "coordination", "styling", "color wheel"],
+      "related_items": ["complementary colors", "analogous colors", "neutrals", "monochrome"]
+    },
+    {
+      "id": "9",
+      "category": "color_coordination",
+      "topic": "Skin Tone and Color Matching",
+      "content": "Understanding your skin tone helps choose flattering colors. Cool undertones: look best in blues, purples, pinks, and jewel tones. Warm undertones: look great in oranges, yellows, browns, and earth tones. Neutral undertones: can wear most colors. Test: silver jewelry flatters cool tones, gold flatters warm tones.",
+      "tags": ["skin tone", "color matching", "flattering colors", "undertones"],
+      "related_items": ["jewel tones", "earth tones", "color analysis"]
+    },
+    {
+      "id": "10",
+      "category": "fabric_care",
+      "topic": "Fabric Types and Care",
+      "content": "Common fabrics and care: Cotton - machine washable, may shrink, iron when damp. Wool - dry clean or hand wash cold, air dry flat. Silk - dry clean or hand wash gently, avoid direct sunlight. Polyester - machine washable, wrinkle-resistant, low heat drying. Denim - wash inside out in cold water, air dry to prevent fading and shrinking.",
+      "tags": ["fabric care", "washing", "maintenance", "clothing care"],
+      "related_items": ["cotton", "wool", "silk", "polyester", "denim"]
+    },
+    {
+      "id": "11",
+      "category": "body_type_styling",
+      "topic": "Dressing for Different Body Types",
+      "content": "Body type styling tips: Rectangle/Athletic - create curves with belts, peplum tops, A-line skirts. Pear shape - emphasize upper body with boat necks, off-shoulder tops, A-line dresses. Apple shape - v-necks, empire waists, straight-leg pants. Hourglass - wrap dresses, fitted styles, high-waisted bottoms. Focus on highlighting your favorite features.",
+      "tags": ["body type", "styling tips", "flattering fits", "proportions"],
+      "related_items": ["wrap dresses", "A-line", "v-necks", "empire waist", "high-waisted"]
+    },
+    {
+      "id": "12",
+      "category": "accessories",
+      "topic": "Accessorizing Outfits",
+      "content": "Accessories complete any outfit. Basic rules: don't over-accessorize, coordinate metals, scale accessories to body size. Essential accessories: watches, belts, sunglasses, bags, jewelry, scarves, and hats. Statement pieces: one bold accessory can transform a simple outfit. For formal events, keep it minimal and elegant.",
+      "tags": ["accessories", "styling", "jewelry", "completing outfits"],
+      "related_items": ["watches", "belts", "sunglasses", "bags", "jewelry", "scarves"]
+    },
+    {
+      "id": "13",
+      "category": "shopping_tips",
+      "topic": "Smart Shopping Strategies",
+      "content": "Smart shopping tips: create a shopping list of needed items, set a budget, shop off-season for discounts, compare prices across stores, check return policies, read reviews, try before buying online using virtual try-on tools, invest in quality basics, avoid impulse purchases. Use price comparison tools for best deals.",
+      "tags": ["shopping", "budget", "smart buying", "deals"],
+      "related_items": ["price comparison", "sales", "quality basics", "budget planning"]
+    },
+    {
+      "id": "14",
+      "category": "style_occasions",
+      "topic": "Business Casual Attire",
+      "content": "Business casual bridges professional and relaxed. For men: dress pants or chinos with button-down shirts, optional blazer, loafers or dress shoes. For women: dress pants or knee-length skirts with blouses, cardigans, closed-toe shoes. Avoid: jeans, sneakers, t-shirts, overly casual items. Neat, polished appearance is key.",
+      "tags": ["business casual", "workplace", "professional", "office wear"],
+      "related_items": ["dress pants", "chinos", "blouses", "loafers", "blazers"]
+    },
+    {
+      "id": "15",
+      "category": "style_occasions",
+      "topic": "Athletic and Activewear",
+      "content": "Athletic wear combines functionality with style. Essential items: moisture-wicking tops, athletic leggings or shorts, sports bras, running shoes, track jackets. Look for breathable fabrics like polyester blends, spandex. Athleisure trend allows wearing athletic pieces casually - pair leggings with oversized sweaters, sneakers with jeans.",
+      "tags": ["athletic", "activewear", "sportswear", "athleisure"],
+      "related_items": ["leggings", "sports bras", "running shoes", "track jackets", "athletic shorts"]
+    },
+    {
+      "id": "16",
+      "category": "trends",
+      "topic": "Current Fashion Trends 2024-2025",
+      "content": "Current fashion trends: oversized blazers, wide-leg pants, sustainable fashion, vintage revival, bold prints and patterns, monochrome outfits, statement sleeves, chunky sneakers, leather everything, and gender-neutral fashion. Color trends: sage green, lavender, rust orange, and classic neutrals. Focus on comfort and individuality.",
+      "tags": ["trends", "2024", "2025", "current fashion", "modern style"],
+      "related_items": ["oversized blazers", "wide-leg pants", "chunky sneakers", "statement pieces"]
+    },
+    {
+      "id": "17",
+      "category": "footwear",
+      "topic": "Shoe Selection Guide",
+      "content": "Footwear basics: Sneakers for casual comfort, loafers for smart-casual, oxford/brogues for formal, boots for fall/winter, sandals for summer, heels for formal/party. Match shoe formality to outfit. Essential collection: white sneakers, black dress shoes, brown casual shoes, boots, comfortable flats. Ensure proper fit and support.",
+      "tags": ["footwear", "shoes", "styling", "comfort"],
+      "related_items": ["sneakers", "loafers", "boots", "heels", "sandals", "oxford shoes"]
+    },
+    {
+      "id": "18",
+      "category": "outfit_recommendations",
+      "topic": "Date Night Outfit Ideas",
+      "content": "Date night styling: aim for polished yet comfortable. For casual dates: fitted jeans with nice top, chelsea boots or heels. For dinner dates: cocktail dress, dress pants with blouse, or smart casual jumpsuit. For men: dark jeans with button-down, blazer optional, dress shoes. Confidence is the best accessory!",
+      "tags": ["date night", "romantic", "evening", "special occasion"],
+      "related_items": ["cocktail dress", "dark jeans", "button-down", "heels", "blazer"]
+    },
+    {
+      "id": "19",
+      "category": "wardrobe_management",
+      "topic": "Closet Organization Tips",
+      "content": "Effective closet organization: categorize by type (tops, bottoms, dresses), then by color. Use matching hangers, fold heavy knits, hang dresses and shirts. Seasonal rotation: store off-season items separately. Declutter regularly using the one-year rule. Use storage solutions: shelf dividers, drawer organizers, hanging organizers. Keep most-worn items accessible.",
+      "tags": ["organization", "closet", "storage", "decluttering"],
+      "related_items": ["hangers", "storage boxes", "organizers", "seasonal storage"]
+    },
+    {
+      "id": "20",
+      "category": "style_occasions",
+      "topic": "Travel Fashion Essentials",
+      "content": "Travel wardrobe essentials: versatile, wrinkle-resistant pieces that mix and match. Pack: 2-3 bottoms, 4-5 tops, 1-2 layering pieces, comfortable shoes plus one dressy option, minimal accessories. Choose neutral color palette for easy coordination. Wear bulkiest items during travel. Pack multi-purpose items like scarves that work as blankets or shawls.",
+      "tags": ["travel", "packing", "versatile", "essentials"],
+      "related_items": ["travel clothes", "wrinkle-resistant", "comfortable shoes", "layering pieces"]
+    }
+  ],
+  "user_preferences_schema": {
+    "style_preference": ["casual", "formal", "sporty", "bohemian", "minimalist", "trendy", "classic"],
+    "color_preferences": ["neutrals", "bright_colors", "pastels", "dark_colors", "earth_tones", "jewel_tones"],
+    "budget_range": ["budget", "mid_range", "premium", "luxury"],
+    "occasion_types": ["work", "casual_outing", "party", "formal_event", "sports", "travel", "date_night"],
+    "body_type": ["rectangle", "pear", "apple", "hourglass", "athletic"],
+    "season": ["spring", "summer", "fall", "winter"]
+  },
+  "product_categories": [
+    "tops", "bottoms", "dresses", "outerwear", "shoes", "accessories", "activewear", "formal_wear", "casual_wear"
+  ]
+}

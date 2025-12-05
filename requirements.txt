@@ -1,0 +1,37 @@
+# OutfitOrbit Fashion AI Chatbot - Requirements
+# Python 3.8+
+
+# Core RAG and NLP
+gradio>=4.0.0
+sentence-transformers>=2.2.0
+transformers>=4.30.0
+torch>=2.0.0
+
+# Vector Search and Retrieval
+faiss-cpu>=1.7.4
+chromadb>=0.4.0
+rank-bm25>=0.2.2
+
+# LangChain for RAG
+langchain>=0.1.0
+langchain-community>=0.0.10
+langchain-huggingface>=0.0.1
+
+# Data Processing
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+
+# Web Scraping and Data Collection
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+opendatasets>=0.1.22
+kaggle>=1.5.16
+
+# Utilities
+python-dotenv>=1.0.0
+tqdm>=4.65.0
+
+# Optional for GPU acceleration
+# torch>=2.0.0+cu118  # Uncomment for CUDA 11.8
+# faiss-gpu>=1.7.4    # Uncomment for GPU-accelerated search

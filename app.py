@@ -54,15 +54,20 @@ def initialize_llm():
             logger.info(f"   Trying {model_name}...")
             device = 0 if torch.cuda.is_available() else -1
             
+            # Use text2text-generation for T5 models
+            task = "text2text-generation" if "t5" in model_name.lower() else "text-generation"
+            
             llm_client = pipeline(
-                "text-generation",
+                task,
                 model=model_name,
                 device=device,
-                max_length=512,
+                max_length=250,  # Shorter for faster response
                 truncation=True,
+                model_kwargs={"low_cpu_mem_usage": True}
             )
             
             CONFIG["llm_model"] = model_name
+            CONFIG["model_type"] = "t5" if "t5" in model_name.lower() else "instruct"
             logger.info(f"✅ FREE LLM initialized: {model_name}")
             logger.info(f"   Device: {'GPU' if device == 0 else 'CPU'}")
             return llm_client
@@ -188,36 +193,33 @@ def load_vector_store(embeddings):
                 if len(matches) > 100:
                     logger.info(f"   Found {len(matches)} potential document fragments")
                     
-                    # Create simple documents from extracted text
-                    new_docstore_dict = {}
-                    index_to_docstore_id = {}
-                    
-                    for idx, match in enumerate(matches[:15000]):  # Limit to 15k docs
+                    # Create documents from extracted text
+                    documents = []
+                    for idx, match in enumerate(matches[:5000]):  # Use first 5000 quality matches
                         try:
                             content = match.decode('utf-8', errors='ignore').strip()
-                            if len(content) > 50:  # Only keep substantial content
-                                doc_id = str(idx)
-                                new_doc = Document(
+                            if len(content) >= 100:  # Only high-quality, substantial content
+                                doc = Document(
                                     page_content=content,
-                                    metadata={}
+                                    metadata={"source": "reconstructed", "id": idx}
                                 )
-                                new_docstore_dict[doc_id] = new_doc
-                                index_to_docstore_id[idx] = doc_id
+                                documents.append(doc)
                         except:
                             continue
                     
-                    logger.info(f"   ✅ Reconstructed {len(new_docstore_dict)} documents from raw data")
+                    if len(documents) < 100:
+                        raise Exception(f"Only extracted {len(documents)} documents, need at least 100")
                     
-                    docstore = InMemoryDocstore(new_docstore_dict)
+                    logger.info(f"   ✅ Extracted {len(documents)} high-quality documents")
+                    logger.info(f"   🔄 Rebuilding FAISS index from scratch...")
                     
-                    vectorstore = FAISS(
-                        embedding_function=embeddings,
-                        index=index,
-                        docstore=docstore,
-                        index_to_docstore_id=index_to_docstore_id
+                    # Create NEW FAISS index from documents (ignore old corrupted index)
+                    vectorstore = FAISS.from_documents(
+                        documents=documents,
+                        embedding=embeddings
                     )
                     
-                    logger.info(f"✅ FAISS vector store reconstructed from raw data")
+                    logger.info(f"✅ FAISS vector store rebuilt from {len(documents)} documents")
                     return vectorstore
                 else:
                     raise Exception("Could not extract enough document content from pickle")
@@ -355,8 +357,13 @@ def generate_llm_answer(
         top_p = 0.97
         repetition_penalty = 1.25
     
-    # Create prompt
-    user_prompt = f"""[INST] Question: {query}
+    # Create prompt based on model type
+    if CONFIG.get("model_type") == "t5":
+        # T5 needs simple format
+        user_prompt = f"Question: {query}\n\nContext: {context_text[:800]}\n\nProvide helpful fashion advice:"
+    else:
+        # Instruct models
+        user_prompt = f"""[INST] Question: {query}
 
 Fashion Knowledge:
 {context_text}
@@ -366,17 +373,30 @@ Answer the question using the knowledge above. Be specific and helpful (100-250 
     try:
         logger.info(f"  → Calling {CONFIG['llm_model']} (temp={temperature}, tokens={max_tokens})...")
         
-        # Call pipeline
-        output = llm_client(
-            user_prompt,
-            max_new_tokens=max_tokens,
-            temperature=temperature,
-            top_p=top_p,
-            repetition_penalty=repetition_penalty,
-            do_sample=True,
-            return_full_text=False,
-            pad_token_id=llm_client.tokenizer.eos_token_id
-        )
+        # Call pipeline with model-specific parameters
+        if CONFIG.get("model_type") == "t5":
+            # T5 uses max_length
+            output = llm_client(
+                user_prompt,
+                max_length=150,
+                temperature=0.7,
+                top_p=0.9,
+                do_sample=True,
+                num_beams=1,  # No beam search for speed
+                early_stopping=True
+            )
+        else:
+            # Other models
+            output = llm_client(
+                user_prompt,
+                max_new_tokens=max_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                repetition_penalty=repetition_penalty,
+                do_sample=True,
+                return_full_text=False,
+                pad_token_id=llm_client.tokenizer.eos_token_id
+            )
         
         # Extract generated text
         response = output[0]['generated_text'].strip()
@@ -472,26 +492,62 @@ def generate_answer_langchain(
 # GRADIO INTERFACE
 # ============================================================================
 
-def fashion_chatbot(message: str, history: List[List[str]]) -> str:
+def fashion_chatbot(message: str, history: List[List[str]]):
     """
-    Chatbot function for Gradio interface
+    Chatbot function for Gradio interface with streaming
     """
     try:
         if not message or not message.strip():
-            return "Please ask a fashion-related question!"
+            yield "Please ask a fashion-related question!"
+            return
         
-        # Generate answer using RAG pipeline
-        answer = generate_answer_langchain(
+        # Show searching indicator
+        yield "🔍 Searching fashion knowledge..."
+        
+        # Retrieve documents
+        retrieved_docs, confidence = retrieve_knowledge_langchain(
             message.strip(),
             vectorstore,
-            llm_client
+            top_k=CONFIG["top_k"]
         )
         
-        return answer
+        if not retrieved_docs:
+            yield "I couldn't find relevant information to answer your question."
+            return
+        
+        # Show generating indicator
+        yield f"💭 Generating answer ({len(retrieved_docs)} sources found)..."
+        
+        # Generate answer with multiple attempts
+        llm_answer = None
+        for attempt in range(1, 5):
+            logger.info(f"\n  🤖 LLM Generation Attempt {attempt}/4")
+            llm_answer = generate_llm_answer(message.strip(), retrieved_docs, llm_client, attempt)
+            
+            if llm_answer:
+                break
+        
+        # Fallback if needed
+        if not llm_answer:
+            logger.error(f"  ✗ All LLM attempts failed - using fallback")
+            llm_answer = synthesize_direct_answer(message.strip(), retrieved_docs)
+        
+        # Stream the answer word by word for natural flow
+        import time
+        words = llm_answer.split()
+        displayed_text = ""
+        
+        for i, word in enumerate(words):
+            displayed_text += word + " "
+            
+            # Yield every 3 words for smooth streaming
+            if i % 3 == 0 or i == len(words) - 1:
+                yield displayed_text.strip()
+                time.sleep(0.05)  # Small delay for natural flow
         
     except Exception as e:
         logger.error(f"Error in chatbot: {e}")
-        return f"Sorry, I encountered an error: {str(e)}"
+        yield f"Sorry, I encountered an error: {str(e)}"
 
 # ============================================================================
 # INITIALIZE AND LAUNCH
@@ -522,21 +578,21 @@ def startup():
 # Initialize on startup
 startup()
 
-# Create Gradio interface
+# Create Gradio interface - simple version compatible with all Gradio versions
 demo = gr.ChatInterface(
     fn=fashion_chatbot,
     title="👗 Fashion Advisor - RAG System",
     description="""
-    **Ask me anything about fashion!** 🌟
-    
-    I can help with:
-    - Outfit recommendations for occasions
-    - Color combinations and styling
-    - Seasonal fashion advice
-    - Body type and fit guidance
-    - Wardrobe essentials
-    
-    *Powered by RAG with FAISS vector search and local LLM*
+**Ask me anything about fashion!** 🌟
+
+I can help with:
+- Outfit recommendations for occasions
+- Color combinations and styling
+- Seasonal fashion advice
+- Body type and fit guidance
+- Wardrobe essentials
+
+*Powered by RAG with FAISS vector search and local LLM*
     """,
     examples=[
         "What should I wear to a business meeting?",
@@ -545,10 +601,6 @@ demo = gr.ChatInterface(
         "How to dress for a summer wedding?",
         "What's the best outfit for a university presentation?",
     ],
-    theme=gr.themes.Soft(),
-    retry_btn=None,
-    undo_btn="Delete Previous",
-    clear_btn="Clear Chat",
 )
 
 # Launch

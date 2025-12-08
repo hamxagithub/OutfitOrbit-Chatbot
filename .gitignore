@@ -1,0 +1,49 @@
+# Add this to .gitignore to avoid committing large files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Models cache (Hugging Face automatically downloads)
+models/
+*.bin
+*.safetensors
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/

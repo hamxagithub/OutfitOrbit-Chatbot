@@ -43,41 +43,38 @@ def initialize_llm():
     """Initialize free local LLM with transformers pipeline"""
     logger.info("🔄 Initializing FREE local language model...")
     
-    BACKUP_MODELS = [
-        "microsoft/Phi-3-mini-4k-instruct",  # Primary - 3.8B, very efficient
-        "google/flan-t5-large",  # Backup - 780M, good quality
-        "google/flan-t5-base",  # Fallback - 250M, fast
-    ]
+    # Use FLAN-T5-Large - reliable, fast, and proven to work
+    model_name = "google/flan-t5-large"
     
-    for model_name in BACKUP_MODELS:
-        try:
-            logger.info(f"   Trying {model_name}...")
-            device = 0 if torch.cuda.is_available() else -1
+    try:
+        logger.info(f"   Loading {model_name}...")
+        device = 0 if torch.cuda.is_available() else -1
+        
+        # T5 configuration
+        task = "text2text-generation"
+        model_type = "t5"
+        
+        # Optimized for speed and quality
+        model_kwargs = {
+            "low_cpu_mem_usage": True,
+        }
+        
+        llm_client = pipeline(
+            task,
+            model=model_name,
+            device=device,
+            model_kwargs=model_kwargs
+        )
             
-            # Use text2text-generation for T5 models
-            task = "text2text-generation" if "t5" in model_name.lower() else "text-generation"
-            
-            llm_client = pipeline(
-                task,
-                model=model_name,
-                device=device,
-                max_length=250,  # Shorter for faster response
-                truncation=True,
-                model_kwargs={"low_cpu_mem_usage": True}
-            )
-            
-            CONFIG["llm_model"] = model_name
-            CONFIG["model_type"] = "t5" if "t5" in model_name.lower() else "instruct"
-            logger.info(f"✅ FREE LLM initialized: {model_name}")
-            logger.info(f"   Device: {'GPU' if device == 0 else 'CPU'}")
-            return llm_client
-            
-        except Exception as e:
-            logger.warning(f"⚠️ Failed {model_name}: {str(e)[:100]}")
-            continue
-    
-    logger.error("⚠️ All models failed - will use fallback generation")
-    return None
+        CONFIG["llm_model"] = model_name
+        CONFIG["model_type"] = model_type
+        logger.info(f"✅ LLM initialized: {model_name}")
+        logger.info(f"   Device: {'GPU' if device == 0 else 'CPU'}")
+        return llm_client
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to load model: {str(e)}")
+        raise Exception(f"Failed to initialize LLM: {str(e)}")
 
 def initialize_embeddings():
     """Initialize sentence transformer embeddings"""
@@ -335,68 +332,62 @@ def generate_llm_answer(
     
     context_text = "\n\n".join(context_parts)
     
-    # Progressive parameters based on attempt
+    # Progressive parameters based on attempt - optimized for longer, natural responses
     if attempt == 1:
-        temperature = 0.75
-        max_tokens = 350
+        temperature = 0.8
+        max_new_tokens = 450  # Longer responses
         top_p = 0.92
-        repetition_penalty = 1.1
+        repetition_penalty = 1.15
     elif attempt == 2:
         temperature = 0.85
-        max_tokens = 450
+        max_new_tokens = 500
         top_p = 0.94
-        repetition_penalty = 1.15
+        repetition_penalty = 1.18
     elif attempt == 3:
-        temperature = 0.92
-        max_tokens = 550
-        top_p = 0.96
+        temperature = 0.9
+        max_new_tokens = 550
+        top_p = 0.95
         repetition_penalty = 1.2
     else:
-        temperature = 1.0
-        max_tokens = 600
-        top_p = 0.97
-        repetition_penalty = 1.25
+        temperature = 0.95
+        max_new_tokens = 600
+        top_p = 0.96
+        repetition_penalty = 1.22
     
-    # Create prompt based on model type
-    if CONFIG.get("model_type") == "t5":
-        # T5 needs simple format
-        user_prompt = f"Question: {query}\n\nContext: {context_text[:800]}\n\nProvide helpful fashion advice:"
-    else:
-        # Instruct models
-        user_prompt = f"""[INST] Question: {query}
+    # Create optimized T5 prompt for detailed, natural responses
+    model_type = CONFIG.get("model_type", "t5")
+    
+    # T5 format - encouraging detailed, conversational responses
+    user_prompt = f"""You are a professional fashion advisor. Answer this question with comprehensive, detailed advice using the context provided. Be specific, natural, and conversational.
 
-Fashion Knowledge:
-{context_text}
+Question: {query}
 
-Answer the question using the knowledge above. Be specific and helpful (100-250 words). [/INST]"""
+Fashion Knowledge Base:
+{context_text[:2000]}
+
+Provide a thorough, well-structured answer (300-500 words) that covers:
+- Main recommendations with specific details
+- Practical styling tips and combinations
+- Why these suggestions work
+- Additional helpful considerations
+
+Answer:"""
 
     try:
-        logger.info(f"  → Calling {CONFIG['llm_model']} (temp={temperature}, tokens={max_tokens})...")
+        logger.info(f"  → Calling {CONFIG['llm_model']} (temp={temperature}, tokens={max_new_tokens})...")
         
-        # Call pipeline with model-specific parameters
-        if CONFIG.get("model_type") == "t5":
-            # T5 uses max_length
-            output = llm_client(
-                user_prompt,
-                max_length=150,
-                temperature=0.7,
-                top_p=0.9,
-                do_sample=True,
-                num_beams=1,  # No beam search for speed
-                early_stopping=True
-            )
-        else:
-            # Other models
-            output = llm_client(
-                user_prompt,
-                max_new_tokens=max_tokens,
-                temperature=temperature,
-                top_p=top_p,
-                repetition_penalty=repetition_penalty,
-                do_sample=True,
-                return_full_text=False,
-                pad_token_id=llm_client.tokenizer.eos_token_id
-            )
+        # T5 optimized parameters for detailed, natural responses
+        output = llm_client(
+            user_prompt,
+            max_new_tokens=max_new_tokens,  # Use max_new_tokens instead of max_length
+            temperature=temperature,
+            top_p=top_p,
+            do_sample=True,
+            num_beams=3,  # More beams for better quality
+            repetition_penalty=repetition_penalty,
+            early_stopping=True,
+            no_repeat_ngram_size=3  # Prevent repetitive phrases
+        )
         
         # Extract generated text
         response = output[0]['generated_text'].strip()
@@ -405,9 +396,9 @@ Answer the question using the knowledge above. Be specific and helpful (100-250 
             logger.warning(f"  ✗ Empty response (attempt {attempt})")
             return None
         
-        # Minimal validation
-        if len(response) < 20:
-            logger.warning(f"  ✗ Response too short: {len(response)} chars")
+        # Validation - accept longer responses (aim for 200+ chars minimum)
+        if len(response) < 50:
+            logger.warning(f"  ✗ Response too short: {len(response)} chars (need 50+)")
             return None
         
         # Check for apologies/refusals
@@ -416,36 +407,18 @@ Answer the question using the knowledge above. Be specific and helpful (100-250 
             logger.warning(f"  ✗ Apology detected")
             return None
         
-        logger.info(f"  ✅ Generated answer ({len(response)} chars)")
+        # Log response length and word count
+        word_count = len(response.split())
+        logger.info(f"  ✅ Generated answer ({len(response)} chars, {word_count} words)")
         return response
         
     except Exception as e:
         logger.error(f"  ✗ Generation error: {e}")
         return None
 
-def synthesize_direct_answer(
-    query: str,
-    retrieved_docs: List[Document]
-) -> str:
-    """
-    Fallback: Synthesize answer directly from most relevant documents
-    """
-    logger.info("  → Using fallback: direct synthesis")
-    
-    if not retrieved_docs:
-        return "I don't have enough information to answer that question accurately."
-    
-    # Get most relevant document
-    best_doc = retrieved_docs[0]
-    content = best_doc.page_content.strip()
-    
-    # Create answer from top document
-    if len(content) > 500:
-        answer = content[:500] + "..."
-    else:
-        answer = content
-    
-    return answer
+# ============================================================================
+# MAIN RAG FUNCTION
+# ============================================================================
 
 def generate_answer_langchain(
     query: str,
@@ -453,7 +426,7 @@ def generate_answer_langchain(
     llm_client
 ) -> str:
     """
-    Main RAG pipeline: Retrieve → Generate → Fallback
+    Main RAG pipeline: Retrieve → Generate (no fallback)
     """
     logger.info(f"\n{'='*80}")
     logger.info(f"Processing query: '{query}'")
@@ -481,10 +454,10 @@ def generate_answer_langchain(
         else:
             logger.warning(f"  → Attempt {attempt}/4 failed, retrying...")
     
-    # Step 3: Fallback if all attempts fail
+    # Step 3: If all attempts fail, return error
     if not llm_answer:
-        logger.error(f"  ✗ All 4 LLM attempts failed - using fallback")
-        llm_answer = synthesize_direct_answer(query, retrieved_docs)
+        logger.error(f"  ✗ All 4 LLM attempts failed")
+        return "I apologize, but I'm having trouble generating a response. Please try rephrasing your question or ask something else."
     
     return llm_answer
 
@@ -527,10 +500,11 @@ def fashion_chatbot(message: str, history: List[List[str]]):
             if llm_answer:
                 break
         
-        # Fallback if needed
+        # If LLM fails, show error
         if not llm_answer:
-            logger.error(f"  ✗ All LLM attempts failed - using fallback")
-            llm_answer = synthesize_direct_answer(message.strip(), retrieved_docs)
+            logger.error(f"  ✗ All LLM attempts failed")
+            yield "I apologize, but I'm having trouble generating a response. Please try rephrasing your question."
+            return
         
         # Stream the answer word by word for natural flow
         import time

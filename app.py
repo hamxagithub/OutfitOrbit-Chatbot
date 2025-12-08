@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 CONFIG = {
     "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
     "llm_model": None,  # Will be set during initialization
-    "vector_store_path": "./faiss_vectorstore",
+    "vector_store_path": ".",  # Root directory (files are in root on HF Spaces)
     "top_k": 15,
     "temperature": 0.75,
     "max_tokens": 350,
@@ -88,23 +88,73 @@ def initialize_embeddings():
     return embeddings
 
 def load_vector_store(embeddings):
-    """Load FAISS vector store"""
+    """Load FAISS vector store with compatibility handling"""
     logger.info("🔄 Loading FAISS vector store...")
     
     vector_store_path = CONFIG["vector_store_path"]
     
-    if not os.path.exists(vector_store_path):
-        logger.error(f"❌ Vector store not found at {vector_store_path}")
-        raise FileNotFoundError(f"Vector store directory not found: {vector_store_path}")
+    # Check for required FAISS files
+    index_file = os.path.join(vector_store_path, "index.faiss")
+    pkl_file = os.path.join(vector_store_path, "index.pkl")
     
-    vectorstore = FAISS.load_local(
-        vector_store_path,
-        embeddings,
-        allow_dangerous_deserialization=True
-    )
+    if not os.path.exists(index_file):
+        logger.error(f"❌ index.faiss not found at {index_file}")
+        raise FileNotFoundError(f"FAISS index file not found: {index_file}")
     
-    logger.info(f"✅ FAISS vector store loaded from {vector_store_path}")
-    return vectorstore
+    if not os.path.exists(pkl_file):
+        logger.error(f"❌ index.pkl not found at {pkl_file}")
+        raise FileNotFoundError(f"FAISS metadata file not found: {pkl_file}")
+    
+    logger.info(f"✅ Found index.faiss ({os.path.getsize(index_file)/1024/1024:.2f} MB)")
+    logger.info(f"✅ Found index.pkl ({os.path.getsize(pkl_file)/1024:.2f} KB)")
+    
+    try:
+        # Try standard loading first
+        vectorstore = FAISS.load_local(
+            vector_store_path,
+            embeddings,
+            allow_dangerous_deserialization=True
+        )
+        logger.info(f"✅ FAISS vector store loaded successfully")
+        return vectorstore
+        
+    except (KeyError, AttributeError) as e:
+        logger.warning(f"⚠️ Pydantic version mismatch detected: {e}")
+        logger.info("🔄 Attempting compatibility fix...")
+        
+        # Monkey-patch for Pydantic v1/v2 compatibility
+        import pickle
+        import faiss
+        
+        # Load FAISS index directly
+        index = faiss.read_index(index_file)
+        
+        # Load pickle with custom unpickler
+        with open(pkl_file, "rb") as f:
+            try:
+                data = pickle.load(f)
+                docstore = data[0]
+                index_to_docstore_id = data[1]
+            except Exception as e2:
+                logger.error(f"❌ Failed to load pickle data: {e2}")
+                raise
+        
+        # Create FAISS vectorstore manually
+        from langchain_community.docstore.in_memory import InMemoryDocstore
+        
+        # Ensure docstore is proper type
+        if not isinstance(docstore, InMemoryDocstore):
+            docstore = InMemoryDocstore(docstore._dict if hasattr(docstore, '_dict') else {})
+        
+        vectorstore = FAISS(
+            embedding_function=embeddings,
+            index=index,
+            docstore=docstore,
+            index_to_docstore_id=index_to_docstore_id
+        )
+        
+        logger.info(f"✅ FAISS vector store loaded with compatibility fix")
+        return vectorstore
 
 # ============================================================================
 # RAG PIPELINE FUNCTIONS

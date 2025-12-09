@@ -1,4 +1,5 @@
 # Add this to .gitignore to avoid committing large files
+hf_token.txt
 __pycache__/
 *.py[cod]
 *$py.class
